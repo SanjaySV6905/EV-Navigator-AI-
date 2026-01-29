@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Router (Python Backend)</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100 overflow-hidden">
+
+    <!-- Sidebar Controls -->
+    <div class="sidebar bg-white p-6 rounded-lg shadow-xl">
+        <h1 class="text-2xl font-bold text-green-600 mb-4">EV Router AI</h1>
+        
+        <div class="space-y-4">
+            <!-- City Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Select City</label>
+                <select id="city" class="w-full mt-1 p-2 border rounded">
+                    <option value="Bangalore">Bangalore</option>
+                    <option value="Chennai">Chennai</option>
+                </select>
+            </div>
+
+            <!-- Start Location -->
+            <div class="relative">
+                <label class="block text-xs font-bold text-gray-700 uppercase">Start Location</label>
+                <input type="text" id="startAddr" placeholder="Click map or type..." class="w-full p-2 border rounded text-sm" autocomplete="off">
+                <div id="startSuggestions" class="suggestions-list hidden"></div>
+                <input type="hidden" id="startLat">
+                <input type="hidden" id="startLon">
+            </div>
+
+            <!-- Destination Location -->
+            <div class="relative">
+                <label class="block text-xs font-bold text-gray-700 uppercase">Destination</label>
+                <input type="text" id="endAddr" placeholder="Click map or type..." class="w-full p-2 border rounded text-sm" autocomplete="off">
+                <div id="endSuggestions" class="suggestions-list hidden"></div>
+                <input type="hidden" id="endLat">
+                <input type="hidden" id="endLon">
+            </div>
+            
+            <!-- Battery Inputs -->
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700">Capacity (kWh)</label>
+                    <input type="number" id="batteryCap" value="2.5" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700">Current Level (%)</label>
+                    <input type="number" id="batteryLevel" value="50" class="w-full p-2 border rounded">
+                </div>
+            </div>
+            
+            <!-- Action Button -->
+            <button id="getRouteBtn" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 font-bold flex justify-center items-center gap-2 transition">
+                <span>Get Optimized Route</span>
+                <span id="spinner" class="loader hidden"></span>
+            </button>
+
+            <!-- Results Panel -->
+            <div id="results" class="hidden border-t pt-4 mt-4 space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span>Distance:</span>
+                    <span id="resDist" class="font-bold">0 km</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>Predicted Usage:</span>
+                    <span id="resEnergy" class="font-bold">0 kWh</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>Remaining at Dest:</span>
+                    <span id="resRemaining" class="font-bold">0%</span>
+                </div>
+                <div id="resAlert" class="p-2 rounded mt-2 text-center text-sm font-bold"></div>
+            </div>
+            
+            <div id="mapHint" class="text-xs text-gray-500 mt-2 text-center">📍 Click map to set Start point</div>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+    
+    <!-- Station Count Badge -->
+    <div id="stationCount" class="stat-badge hidden">Loading Stations...</div>
+
+    <!-- Leaflet Library -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- App Modules (Order Matters) -->
+    <script src="js/ui.js"></script>          <!-- UI Helpers -->
+    <script src="js/map.js"></script>         <!-- Map Logic -->
+    <script src="js/stations.js"></script>    <!-- Station Logic -->
+    <script src="js/autocomplete.js"></script><!-- Search Logic -->
+    <script src="js/routing.js"></script>     <!-- Backend API Logic -->
+    <script src="js/main.js"></script>        <!-- Entry Point -->
+</body>
+</html>

@@ -1,0 +1,74 @@
+/* Map fills the screen */
+#map { 
+    height: 100vh; 
+    width: 100%; 
+    cursor: crosshair; 
+}
+
+/* Floating Sidebar */
+.sidebar { 
+    position: absolute; 
+    top: 10px; 
+    left: 10px; 
+    z-index: 1000; /* Above map tiles */
+    width: 350px; 
+    max-height: 90vh; 
+    overflow-y: auto; 
+    scrollbar-width: thin;
+}
+
+/* Autocomplete Dropdown */
+.suggestions-list { 
+    position: absolute; 
+    background: white; 
+    border: 1px solid #ddd; 
+    border-radius: 0.25rem;
+    max-height: 200px; 
+    overflow-y: auto; 
+    width: 100%; 
+    z-index: 2000; 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-item { 
+    padding: 8px 12px; 
+    cursor: pointer; 
+    font-size: 0.875rem;
+    border-bottom: 1px solid #f3f4f6;
+    line-height: 1.2;
+}
+
+.suggestion-item:hover { 
+    background-color: #f3f4f6; 
+}
+
+/* Info Badges */
+.stat-badge { 
+    position: absolute; 
+    top: 10px; 
+    right: 10px; 
+    z-index: 1000; 
+    background: white; 
+    padding: 8px 12px; 
+    border-radius: 4px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+    font-size: 0.8rem;
+    font-weight: bold; 
+}
+
+/* Loading Spinner */
+.loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin { 
+    0% { transform: rotate(0deg); } 
+    100% { transform: rotate(360deg); } 
+}
+
