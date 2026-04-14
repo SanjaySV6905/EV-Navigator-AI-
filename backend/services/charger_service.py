@@ -1,49 +1,66 @@
-import osmnx as ox
-import pandas as pd
+import requests
 import math
-from backend.models.schemas import StationResponse
 
-def fetch_charging_stations(city_name: str) -> list[StationResponse]:
-    print(f"🔌 Fetching charging stations for {city_name}...")
-    tags = {'amenity': 'charging_station'}
-    
+OCM_API_KEY = "471b3533-7ffe-4f91-be73-9cb11f91a776"
+
+CITY_COORDS = {
+    "Bangalore": (12.9716, 77.5946),
+    "Chennai":   (13.0827, 80.2707),
+}
+
+_cache: dict = {}
+
+
+def fetch_charging_stations(city_name: str) -> list:
+    if city_name in _cache:
+        print(f"📦 Cached stations for {city_name} ({len(_cache[city_name])})")
+        return _cache[city_name]
+
+    coords = CITY_COORDS.get(city_name)
+    if not coords:
+        print(f"⚠️ Unknown city: {city_name}")
+        return []
+
+    lat, lon = coords
+    print(f"🔌 Fetching {city_name} from Open Charge Map...")
+
     try:
-        # Fetch features from OSM
-        gdf = ox.features_from_place(f"{city_name}, India", tags)
-        
-        if gdf.empty:
-            return []
+        resp = requests.get(
+            "https://api.openchargemap.io/v3/poi/",
+            params={
+                "output": "json", "countrycode": "IN",
+                "latitude": lat, "longitude": lon,
+                "distance": 30, "distanceunit": "KM",
+                "maxresults": 500, "compact": "true", "verbose": "false",
+                "key": OCM_API_KEY,
+            },
+            headers={"X-API-Key": OCM_API_KEY},
+            timeout=15
+        )
+        resp.raise_for_status()
 
         stations = []
-        for _, row in gdf.iterrows():
-            lat, lon = None, None
-            geom = row.geometry
-            
-            # Handle Points vs Polygons (Buildings)
-            if geom.geom_type == 'Point':
-                lat, lon = geom.y, geom.x
-            elif geom.geom_type in ['Polygon', 'MultiPolygon']:
-                centroid = geom.centroid
-                lat, lon = centroid.y, centroid.x
-            
-            # Clean Name
-            name = row.get('name', 'EV Charging Station')
-            if isinstance(name, list): 
-                name = name[0]
-            if pd.isna(name): 
-                name = "EV Charging Station"
-            
-            # Validate Coordinates
-            if lat and lon and not (math.isnan(lat) or math.isnan(lon)):
+        for poi in resp.json():
+            try:
+                addr = poi.get("AddressInfo", {})
+                slat, slon = addr.get("Latitude"), addr.get("Longitude")
+                if slat is None or slon is None:
+                    continue
+                if math.isnan(float(slat)) or math.isnan(float(slon)):
+                    continue
                 stations.append({
-                    "name": str(name),
-                    "lat": round(lat, 6),
-                    "lon": round(lon, 6)
+                    "name": str(addr.get("Title") or "EV Charging Station"),
+                    "lat":  round(float(slat), 6),
+                    "lon":  round(float(slon), 6),
                 })
-                
+            except Exception:
+                continue
+
         print(f"✅ Found {len(stations)} stations in {city_name}")
+        if stations:
+            _cache[city_name] = stations
         return stations
 
     except Exception as e:
-        print(f"❌ Error fetching stations: {e}")
+        print(f"❌ OCM error for {city_name}: {e}")
         return []
